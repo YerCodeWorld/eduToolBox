@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Learning Hub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Mode Selection -->
+        <div id="mode-selection" class="mode-selection">
+            <h1 class="title">Interactive Learning Hub</h1>
+            <p class="subtitle">Choose your learning adventure</p>
+            
+            <div class="mode-cards">
+                <div class="mode-card" onclick="selectMode('numbers')">
+                    <div class="mode-icon">🔢</div>
+                    <h3>Number Challenge</h3>
+                    <p>Practice with random numbers and optional topics</p>
+                </div>
+                <div class="mode-card" onclick="selectMode('quiz')">
+                    <div class="mode-icon">🧠</div>
+                    <h3>Quick Quiz</h3>
+                    <p>Test your knowledge with timed questions</p>
+                </div>
+                <div class="mode-card" onclick="selectMode('memory')">
+                    <div class="mode-icon">🎴</div>
+                    <h3>Memory Game</h3>
+                    <p>Match pairs and improve your memory</p>
+                </div>
+                <div class="mode-card" onclick="selectMode('speed')">
+                    <div class="mode-icon">⚡</div>
+                    <h3>Speed Round</h3>
+                    <p>Fast-paced challenges for quick thinking</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Phase -->
+        <div id="setup-phase" class="hidden">
+            <button class="btn-back" onclick="backToModeSelection()">← Back to Modes</button>
+            <h1 class="title">Number Challenge Setup</h1>
+            <p class="subtitle">Configure your practice session</p>
+
+            <div class="setup-form">
+                <div class="mode-selector">
+                    <label>Choose Mode:</label>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="mode" value="numbers" checked onchange="toggleModeInputs()">
+                            <span>Numbers Mode</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="mode" value="names" onchange="toggleModeInputs()">
+                            <span>Names Mode</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="numbersMode" class="mode-inputs">
+                    <div class="input-group">
+                        <label for="maxNumber">Maximum Number (1 to ?):</label>
+                        <input type="number" id="maxNumber" min="2" max="100" value="10">
+                    </div>
+                </div>
+
+                <div id="namesMode" class="mode-inputs hidden">
+                    <div class="input-group">
+                        <label for="namesInput">Participant Names (comma-separated):</label>
+                        <textarea id="namesInput" placeholder="Example: John, Mary, David, Sarah" rows="3"></textarea>
+                        <small class="input-help">Enter at least 2 names separated by commas</small>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="timeInterval">Auto-advance interval (seconds):</label>
+                    <input type="number" id="timeInterval" min="1" max="300" value="5">
+                </div>
+
+                <div class="input-group">
+                    <label for="topicsInput">Topics (optional, comma-separated):</label>
+                    <textarea id="topicsInput" placeholder="Example: Apple, Car, House, Tree" rows="3"></textarea>
+                    <small class="input-help">Leave empty for no topics, or add topics to appear with items</small>
+                </div>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="showTopics" checked>
+                        <span>Show topics with items</span>
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startPractice()">Start Session</button>
+        </div>
+
+        <!-- Practice Phase -->
+        <div id="practice-phase" class="practice-area hidden">
+            <button class="btn-back" onclick="confirmExit()">← Exit Session</button>
+            
+            <div class="progress-info">
+                <span>Item <span id="currentIndex">1</span> of <span id="totalNumbers">10</span></span>
+                <div class="timer-display" id="timerDisplay">5s</div>
+            </div>
+
+            <div class="display-area">
+                <div class="current-number" id="currentNumber">1</div>
+                <div class="current-topic" id="currentTopic"></div>
+            </div>
+
+            <div class="counter-section">
+                <div class="counter-display">Points: <span id="counterValue">0</span></div>
+                <div class="point-buttons">
+                    <button class="btn btn-success" onclick="incrementCounter()">+1 Point</button>
+                    <button class="btn btn-danger" onclick="decrementCounter()">-1 Point</button>
+                </div>
+            </div>
+
+            <div class="control-buttons">
+                <button class="btn btn-secondary" onclick="previousNumber()">← Previous</button>
+                <button class="btn btn-secondary" onclick="nextNumber()">Next →</button>
+                <button class="btn btn-secondary" onclick="pauseResume()" id="pauseBtn">Pause</button>
+                <button class="btn btn-secondary" onclick="randomJump()">Random Jump</button>
+            </div>
+        </div>
+
+        <!-- Results Phase -->
+        <div id="results-phase" class="results-area hidden">
+            <div class="results-title">🎉 Session Complete!</div>
+
+            <div class="summary-stats" id="summaryStats">
+                <!-- Summary cards will be inserted here -->
+            </div>
+
+            <div class="results-controls">
+                <button class="btn btn-secondary" onclick="toggleResultsView()">Toggle View</button>
+                <button class="btn btn-secondary" onclick="exportResults()">Export Results</button>
+            </div>
+
+            <div class="stats-table" id="statsTable">
+                <!-- Individual results will be inserted here -->
+            </div>
+
+            <div class="control-buttons">
+                <button class="btn btn-primary" onclick="startNewSession()">New Session</button>
+                <button class="btn btn-secondary" onclick="backToModeSelection()">Change Mode</button>
+            </div>
+        </div>
+
+        <!-- Memory Game Setup Phase -->
+        <div id="memory-setup-phase" class="hidden">
+            <button class="btn-back" onclick="backToModeSelection()">← Back to Modes</button>
+            <h1 class="title">Memory Game Setup</h1>
+            <p class="subtitle">Configure your memory challenge</p>
+
+            <div class="setup-form">
+                <div class="input-group">
+                    <label for="gridSize">Grid Size:</label>
+                    <select id="gridSize">
+                        <option value="4">4x4 (8 pairs)</option>
+                        <option value="6">6x6 (18 pairs)</option>
+                        <option value="8">8x8 (32 pairs)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="memoryContent">Card Content:</label>
+                    <select id="memoryContent" onchange="toggleMemoryInputs()">
+                        <option value="numbers">Numbers</option>
+                        <option value="emojis">Emojis</option>
+                        <option value="words">Custom Words</option>
+                        <option value="math">Math Problems</option>
+                    </select>
+                </div>
+
+                <div id="memoryWordsInput" class="input-group hidden">
+                    <label for="memoryWords">Words (comma-separated, need enough for pairs):</label>
+                    <textarea id="memoryWords" placeholder="Cat, Dog, Bird, Fish, Lion, Tiger..." rows="3"></textarea>
+                    <small class="input-help">Enter at least 8 different words for 4x4 grid</small>
+                </div>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="showTimer" checked>
+                        <span>Show Timer</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" id="showMoves" checked>
+                        <span>Show Move Counter</span>
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startMemoryGame()">Start Game</button>
+        </div>
+
+        <!-- Memory Game Phase -->
+        <div id="memory-game-phase" class="hidden">
+            <button class="btn-back" onclick="confirmExitMemory()">← Exit Game</button>
+            
+            <div class="memory-header">
+                <h2 class="memory-title">Memory Game</h2>
+                <div class="memory-stats">
+                    <div class="stat-item" id="memoryTimer">
+                        <span class="stat-label">Time:</span>
+                        <span class="stat-value" id="memoryTime">00:00</span>
+                    </div>
+                    <div class="stat-item" id="memoryMovesDiv">
+                        <span class="stat-label">Moves:</span>
+                        <span class="stat-value" id="memoryMoves">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Pairs:</span>
+                        <span class="stat-value"><span id="memoryFound">0</span>/<span id="memoryTotal">8</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="memoryGrid" class="memory-grid">
+                <!-- Cards will be dynamically generated here -->
+            </div>
+
+            <div class="control-buttons">
+                <button class="btn btn-secondary" onclick="resetMemoryGame()">New Game</button>
+                <button class="btn btn-secondary" onclick="pauseMemoryGame()" id="memoryPauseBtn">Pause</button>
+            </div>
+        </div>
+
+        <!-- Memory Game Results -->
+        <div id="memory-results-phase" class="hidden">
+            <div class="results-title">🎉 Memory Game Complete!</div>
+
+            <div class="summary-stats" id="memorySummaryStats">
+                <!-- Summary cards will be inserted here -->
+            </div>
+
+            <div class="memory-leaderboard">
+                <h3>Best Times</h3>
+                <div id="memoryLeaderboard" class="leaderboard-list">
+                    <!-- Leaderboard entries will be shown here -->
+                </div>
+            </div>
+
+            <div class="control-buttons">
+                <button class="btn btn-primary" onclick="playAgainMemory()">Play Again</button>
+                <button class="btn btn-secondary" onclick="backToModeSelection()">Change Mode</button>
+            </div>
+        </div>
+
+        <!-- Settings Toggle -->
+        <button class="settings-toggle" onclick="toggleSettings()" title="Settings">⚙️</button>
+        
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="settings-panel hidden">
+            <h3>Settings</h3>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                        <span>Dark Mode</span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span>Sound Effects</span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="animationsToggle" checked>
+                        <span>Animations</span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <button class="btn btn-secondary" onclick="clearAllData()">Clear All Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
